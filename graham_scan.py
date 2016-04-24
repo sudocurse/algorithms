@@ -6,21 +6,25 @@ bounding polygon from a set of input points.
 from operator import itemgetter
 from matplotlib import pyplot
 
-def min_y(input_q):
+def find_min_y(input_q):
     '''returns smallest y in set. if tie, goes by smallest x.'''
     return input_q.index(min(input_q, key=itemgetter(1, 0)))
 
 def polar_sorted(input_q, min_y):
     '''sorts list by polar angle counterclockwise around p0 (the min_y)'''
     #TODO implement polar_sorted. can this be parallelized
+    if min_y is None:
+        print "this hsouldn't happen"
     return input_q
 
-def angle(top, next_top, p0):
+def angle(top, next_top, min_y):
     """
         non-left angles wtf
     """
+    if top is None or next_top is None or min_y is None:
+        print "this shouldn't happen"
     #TODO angle. can this be parallelized
-    pass
+    #pass
 
 def graham_scan(input_set):
     '''
@@ -40,7 +44,7 @@ def graham_scan(input_set):
     candidates = [] # p
     results = [] # s
 
-    mindex = min_y(input_set)
+    mindex = find_min_y(input_set)
     candidates.append(input_set[mindex])
     del input_set[mindex] # why does this keyword feel gross
 
@@ -50,9 +54,9 @@ def graham_scan(input_set):
     results.append(candidates[1])
     results.append(candidates[2])
 
-    for item in range(3, len(candidates)):
+    for i in range(3, len(candidates)):
         # enumerate for index?? may need to pass that info onto angle()
-        while angle(results[-1],results[-2],candidates[0]) > 90: # that's 90 degrees
+        while angle(results[-1], results[-2], candidates[i]) > 90: # degrees
             results.pop()
 
         results.append(candidates[1])
@@ -65,14 +69,23 @@ def generate_coordinates(length):
     rsamp = random.sample(range(1, 100), length * 2)
     return zip(rsamp[:length], rsamp[length:])
 
-def plot(set, bound):
-    pyplot.scatter(*zip(*set))
+def plot(dset, bound):
+    '''plot the list of tuples dset and create a bounding polygon from bound'''
+
+    last = bound[0]
+    bound.append(last)
+
+    for cur in bound[1:]:
+        pyplot.plot(last[0], last[1], cur[0], cur[1])
+        last = cur
+
+    pyplot.scatter(*zip(*dset))
     pyplot.show()
 
 if __name__ == '__main__':
     #
-    #TODO: write some unit tests to make sure graham_scan(data) fails on bad length, non-unique, or collinear input data
-    #
+    #TODO: write some unit tests to make sure graham_scan(data) fails on
+    #       bad length, non-unique, or collinear input data
 
     data = generate_coordinates(5)
     boundaries = graham_scan(data)
