@@ -28,15 +28,11 @@ def angle(top, next_top, min_y):
 
 def graham_scan(input_set):
     '''
-        Takes a set of points of size >= 3. This is tested for.
-
-        Assumes points are unique, and not collinear. TODO: test for these
-
-        Algorithm description:
-            (q) input_set = input_set
-            (result_stack) s = []
-            (candidates) p[0] = min_y(input_set) # min y
+        Takes a set of points of size >= 3 and returns smallest bounding polygon.
+        Size assumption is tested for.
     '''
+    #TODO Assumes points are unique, and not collinear.
+
     assert len(input_set) >= 3 # q
     # assert unique
     # assert non-collinear
