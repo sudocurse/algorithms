@@ -23,23 +23,24 @@ def cross_product(vector1, vector2):
     # meaning would be like a x b > 0
 
 def polar_sort(input_q, orig_pt):
-    #TODO: testing for assumptions == verifying cross product and sort order
     '''sorts list by polar angle counterclockwise around p0 (the orig_pt)'''
-    #TODO implement polar_sorted. can this be parallelized
+    #TODO: testing for assumptions == verifying cross product and sort order
+
     if orig_pt is None:
         print "this shouldn't happen"
 
     normalized = map(lambda x: (x[0] - orig_pt[0], x[1] - orig_pt[1]), input_q)
-
+    #TODO: yeah pylint is going to complain about these map functions
 
     def qsort(L):
         '''
          a cross product quicksort. if thing x pt >0, counterclockwise,
          if thing x point > 0, clockwise. and i thiIink it discards colinear?
         '''
-        if len(L) <= 1: return L
-        return qsort([i for i in L[1:] if cross_product(i,L[0])>0]) + L[0:1] + \
-               qsort([i for i in L[1:] if cross_product(i,L[0])<0])
+        if len(L) <= 1:
+            return L
+        return qsort([i for i in L[1:] if cross_product(i, L[0]) > 0]) + L[0:1] + \
+               qsort([i for i in L[1:] if cross_product(i, L[0]) < 0])
 
     return map(lambda x: (x[0] + orig_pt[0], x[1] + orig_pt[1]), qsort(normalized))
 
@@ -72,8 +73,6 @@ def graham_scan(input_set):
 
     vertices = polar_sorted[0:3]
 
-    print "sorted: ", polar_sorted
-
     #for each candidate point check
     for candidate_point in polar_sorted[3:]:
         # s1 -> s2 -> candidate_point needs to make a left turn
@@ -89,7 +88,7 @@ def plot(dset, bound):
 
     codes = [Path.MOVETO]
 
-    for cur in bound[1:]:
+    for _ in bound[1:]:
         codes.append(Path.LINETO)
 
     bound.append(bound[0])
@@ -112,7 +111,5 @@ def generate_coordinates(length):
 if __name__ == '__main__':
 
     data = generate_coordinates(40)
-    #print "data =", data
     boundaries = graham_scan(data)
-    print "bounds ",boundaries
     plot(data, boundaries)
