@@ -5,6 +5,8 @@ bounding polygon from a set of input points.
 '''
 from operator import itemgetter
 from matplotlib import pyplot
+from matplotlib.path import Path
+import matplotlib.patches as patches
 
 def find_min_y(input_q):
     '''returns smallest y in set. if tie, goes by smallest x.'''
@@ -31,8 +33,9 @@ def polar_sort(input_q, orig_pt):
 
 
     def qsort(L):
-        '''a cross product quicksort. if thing x pt >0, counterclockwise,
-            if thing x point > 0, clockwise. and i thiIink it discards colinear?
+        '''
+         a cross product quicksort. if thing x pt >0, counterclockwise,
+         if thing x point > 0, clockwise. and i thiIink it discards colinear?
         '''
         if len(L) <= 1: return L
         return qsort([i for i in L[1:] if cross_product(i,L[0])>0]) + L[0:1] + \
@@ -40,14 +43,16 @@ def polar_sort(input_q, orig_pt):
 
     return map(lambda x: (x[0] + orig_pt[0], x[1] + orig_pt[1]), qsort(normalized))
 
-def angle(top, next_top, min_y):
-    """
-        non-left angles wtf
-    """
-    if top is None or next_top is None or min_y is None:
-        print "this shouldn't happen"
+def left_turn(p0, p1, p2):
+    '''
+     also uses vectors to determine clockwise-ness.
+     if cross product of (p2-p0) x (p1 - p0) is negative, left turn at p1
+    '''
 
-    #TODO implement this! should be the last piece
+    v1 = (p2[0]-p0[0], p2[1]-p0[1])
+    v2 = (p1[0]-p0[0], p1[1]-p0[1])
+
+    return cross_product(v1, v2) < 0
 
 def graham_scan(input_set):
     '''
@@ -56,47 +61,46 @@ def graham_scan(input_set):
     '''
 
     assert len(input_set) >= 3 # q
-    # assert unique
-    # assert non-collinear
 
-    polar_sorted = [] # p
-    vertices = [] # s
-
+    # get input with y that is lowest first, then leftmost if tied, and make that p[0]
     mindex = find_min_y(input_set)
-    polar_sorted.append(input_set[mindex])
-    input_set = input_set[:mindex] + input_set[mindex+1:] # why does this keyword feel gross
+    polar_sorted = [input_set[mindex]]
 
+    # p1...n = array of the rest of the coordinates, sorted by polar angle to p[0]
+    input_set = input_set[:mindex] + input_set[mindex+1:]
     polar_sorted.extend(polar_sort(input_set, polar_sorted[0]))
-    # so far so good....
+
+    vertices = polar_sorted[0:3]
 
     print "sorted: ", polar_sorted
 
-    vertices.append(polar_sorted[0])
-    vertices.append(polar_sorted[1])
-    vertices.append(polar_sorted[2])
-
-    print "vertices: ", vertices
-
+    #for each candidate point check
     for candidate_point in polar_sorted[3:]:
-        while angle(vertices[-1], vertices[-2], candidate_point) > 90: # degrees
+        # s1 -> s2 -> candidate_point needs to make a left turn
+        while left_turn(vertices[-2], vertices[-1], candidate_point) is False: # degrees
             vertices.pop()
+
         vertices.append(candidate_point)
 
     return vertices
 
-
-
 def plot(dset, bound):
     '''plot the list of tuples dset and create a bounding polygon from bound'''
 
-    last = bound[0]
-    bound.append(last)
+    codes = [Path.MOVETO]
 
     for cur in bound[1:]:
-        pyplot.plot(last[0], last[1], cur[0], cur[1])
-        last = cur
+        codes.append(Path.LINETO)
+
+    bound.append(bound[0])
+    codes.append(Path.CLOSEPOLY)
+
+    path = Path(bound, codes)
+    patch = patches.PathPatch(path, facecolor='orange', lw=2, alpha=0.3)
+    pyplot.gca().add_patch(patch)
 
     pyplot.scatter(*zip(*dset))
+
     pyplot.show()
 
 def generate_coordinates(length):
@@ -107,8 +111,8 @@ def generate_coordinates(length):
 
 if __name__ == '__main__':
 
-    data = generate_coordinates(4)
-    print "data =", data
+    data = generate_coordinates(40)
+    #print "data =", data
     boundaries = graham_scan(data)
     print "bounds ",boundaries
     plot(data, boundaries)
