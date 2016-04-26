@@ -44,16 +44,16 @@ def polar_sort(input_q, orig_pt):
 
     return map(lambda x: (x[0] + orig_pt[0], x[1] + orig_pt[1]), qsort(normalized))
 
-def left_turn(p0, p1, p2):
+def left_turn(pt0, pt1, pt2):
     '''
      also uses vectors to determine clockwise-ness.
      if cross product of (p2-p0) x (p1 - p0) is negative, left turn at p1
     '''
 
-    v1 = (p2[0]-p0[0], p2[1]-p0[1])
-    v2 = (p1[0]-p0[0], p1[1]-p0[1])
+    vector_p0p2 = (pt2[0]-pt0[0], pt2[1]-pt0[1])
+    vector_p0p1 = (pt1[0]-pt0[0], pt1[1]-pt0[1])
 
-    return cross_product(v1, v2) < 0
+    return cross_product(vector_p0p2, vector_p0p1) < 0
 
 def graham_scan(input_set):
     '''
@@ -111,6 +111,6 @@ def generate_coordinates(pop_size, length):
 
 if __name__ == '__main__':
 
-    data = generate_coordinates(pop_size=500,length=10)
+    data = generate_coordinates(pop_size=500, length=10)
     boundaries = graham_scan(data)
     plot(data, boundaries)
