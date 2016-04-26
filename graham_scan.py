@@ -88,9 +88,7 @@ def plot(dset, bound):
 
     codes = [Path.MOVETO]
 
-    for _ in bound[1:]:
-        codes.append(Path.LINETO)
-
+    codes.extend([Path.LINETO]*(len(bound)-1))
     bound.append(bound[0])
     codes.append(Path.CLOSEPOLY)
 
@@ -102,14 +100,17 @@ def plot(dset, bound):
 
     pyplot.show()
 
-def generate_coordinates(length):
-    '''input number of tuples. return that many rand tuples.'''
+def generate_coordinates(pop_size, length):
+    '''
+        input range and number of coordinates desired.
+        return that many rand (x,y) tuples.
+    '''
     import random
-    rsamp = random.sample(range(1, 100), length * 2)
+    rsamp = random.sample(range(pop_size), length * 2)
     return zip(rsamp[:length], rsamp[length:])
 
 if __name__ == '__main__':
 
-    data = generate_coordinates(40)
+    data = generate_coordinates(pop_size=500,length=10)
     boundaries = graham_scan(data)
     plot(data, boundaries)
